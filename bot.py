@@ -1,56 +1,59 @@
 from omnidimension import Client
+import json
+import os
+from datetime import datetime
 
 # Initialize client
 client = Client(api_key="CG5rSN1vd5oRJqXiVCK3ILEFLIp46QsVP08a7rDVq8E")
 
-# Create an agent
+# Create an agent with enhanced voice shopping capabilities
 response = client.agent.create(
     name="WalmartVoiceShopper",
-    welcome_message="""Welcome to Walmart shopping assistant. What would you like to add to your cart today?""",
+    welcome_message="""Welcome to Walmart's voice shopping assistant! I can help you add items to your cart, check prices, and manage your shopping list. Just say 'Hey Walmart' followed by what you'd like to do. For example, 'Hey Walmart, add a can of diet coke to my cart' or 'Hey Walmart, add 2 gallons of milk to my cart'.""",
     context_breakdown=[
-                {"title": "Voice Interaction Initialization", "body": """ Start by welcoming the user to the Walmart shopping assistant. Prompt them to name items they wish to add to their cart. Use phrases like: "Welcome to Walmart shopping assistant. What would you like to add to your cart today?" Listen for keywords such as 'add', 'want', or 'put'. Encourage them to provide the quantity and product type if applicable. """ , 
-                "is_enabled" : True},
-                {"title": "Product Recognition and Confirmation", "body": """ When the user provides a product command, like 'Add [product] to my cart', immediately confirm the product name and quantity to avoid errors. If the statement includes a specific brand or type, verify it, e.g., "You'd like 2 bottles of A2 milk, is that correct?" Continue by allowing the user to refine their selection or confirm. """ , 
-                "is_enabled" : True},
-                {"title": "Handling Ambiguities", "body": """ Listen carefully for potential ambiguities in the user's request. For example, if the user says, 'I need milk', ask clarifying questions like "Which brand or type of milk would you prefer?" or "How many cartons would you like to add?" This encourages specific user input and ensures accurate cart additions. """ , 
-                "is_enabled" : True},
-                {"title": "Multi-Item Recognition and Handling", "body": """ If the user lists multiple items, recognize each item and confirm collectively for a seamless experience. For instance, if they say, 'Add bread, butter, and eggs', reply with: "Adding bread, butter, and eggs. Please confirm the quantities you need for each item." This approach allows for clear verification and any necessary adjustments. """ , 
-                "is_enabled" : True},
-                {"title": "Quantity and Item Management", "body": """ To update an item quantity or remove an item, recognize phrases like 'Change quantity to', 'update to', or 'remove'. Confirm their request by saying, "You'd like to update milk to 3 cartons?" or "Removing eggs from your cart, is that right?" Prompt the user for corrections if needed. """ , 
-                "is_enabled" : True},
-                {"title": "Feedback and Confirmation", "body": """ After processes like adding or adjusting items, provide immediate and concise feedback. For successful actions, respond with "Got it, 2 cartons of almond milk added to your cart." Praise their choices to maintain a friendly tone, like "Perfect! 3 packs of your favorite cereal are added." Guidance continues by preparing the user for next steps. """ , 
-                "is_enabled" : True},
-                {"title": "Speech Style and Delivery", "body": """ Maintain a friendly and efficient tone throughout the conversation. Speak clearly and at a moderate pace. Use natural language patterns and keep sentences concise to suit a mobile platform. Avoid overly technical terms and focus on helpful, straightforward dialogue. """ , 
-                "is_enabled" : True}
+        {"title": "Voice Activation and Recognition", "body": """Listen for the wake phrase 'Hey Walmart' or 'Hello Walmart' to activate the shopping assistant. Once activated, immediately process the user's shopping request. Recognize natural language patterns like 'add', 'put in cart', 'I want', 'get me', 'need', 'buy', etc. Extract product names, quantities, and brands from the user's speech.""", "is_enabled": True},
+        {"title": "Product Recognition and Validation", "body": """When users mention products, validate against common Walmart inventory. For food items, recognize variations like 'milk' (default to whole milk), 'bread' (default to white bread), 'eggs' (default to large eggs), 'coke' (default to Coca-Cola), 'diet coke', 'pepsi', etc. For quantities, understand 'a', 'one', '1', 'two', '2', 'three', '3', 'pack', 'bottle', 'can', 'gallon', 'dozen', etc. Always confirm the exact product and quantity before adding to cart.""", "is_enabled": True},
+        {"title": "Smart Product Matching", "body": """Match user requests to actual Walmart products. For example: 'diet coke' → 'Coca-Cola Diet Coke 12 oz Can', 'milk' → 'Great Value Whole Milk 1 Gallon', 'bread' → 'Great Value White Bread 20 oz', 'eggs' → 'Great Value Large Eggs 12 Count'. If multiple options exist, ask for clarification. For example: 'Which type of milk would you prefer - whole, 2%, or skim?'""", "is_enabled": True},
+        {"title": "Cart Management", "body": """After confirming a product addition, provide immediate feedback: 'Perfect! I've added 2 cans of Diet Coke to your cart. The total is now $X.XX.' Allow users to modify quantities: 'Change the milk to 3 gallons' or 'Update the bread quantity to 2 loaves.' Support removal: 'Remove the eggs from my cart' or 'Take out the soda.' Always confirm changes before applying them.""", "is_enabled": True},
+        {"title": "Price and Availability", "body": """When adding items, mention the price: 'Adding 1 gallon of Great Value Whole Milk for $3.48 to your cart.' If an item is out of stock, suggest alternatives: 'The Great Value Whole Milk is currently out of stock. Would you like to try the Organic Valley Whole Milk for $4.99 instead?' Always check availability before confirming additions.""", "is_enabled": True},
+        {"title": "Multi-Item Processing", "body": """Handle multiple items in one request: 'Add milk, bread, and eggs to my cart.' Process each item individually: 'I'll add 1 gallon of Great Value Whole Milk for $3.48, 1 loaf of Great Value White Bread for $1.48, and 1 dozen Great Value Large Eggs for $2.98. Total addition: $7.94. Is that correct?' Allow users to modify individual items in multi-item requests.""", "is_enabled": True},
+        {"title": "Conversation Flow", "body": """Maintain a friendly, helpful tone throughout. Use Walmart's brand voice - approachable, reliable, and efficient. Keep responses concise but informative. After each action, ask if there's anything else they need: 'Is there anything else you'd like to add to your cart today?' End conversations warmly: 'Thank you for shopping with Walmart! Your cart is ready for checkout.'""", "is_enabled": True},
+        {"title": "Error Handling", "body": """If you can't understand a product request, ask for clarification: 'I didn't catch that. Could you please repeat the product name?' If a product isn't found, suggest alternatives: 'I don't see that exact product. Would you like to try [similar product] instead?' Always provide helpful alternatives rather than just saying no.""", "is_enabled": True}
     ],
     transcriber={
         "provider": "deepgram_stream",
-        "silence_timeout_ms": 400,
+        "silence_timeout_ms": 500,
         "model": "nova-3",
         "numerals": True,
         "punctuate": True,
-        "smart_format": False,
-        "diarize": False
+        "smart_format": True,
+        "diarize": False,
+        "language": "en-US"
     },
     model={
         "model": "gpt-4o-mini",
-        "temperature": 0.7
+        "temperature": 0.3
     },
     voice={
         "provider": "eleven_labs",
-        "voice_id": "cgSgspJ2msm6clMCkdW9"
+        "voice_id": "cgSgspJ2msm6clMCkdW9",
+        "stability": 0.7,
+        "similarity_boost": 0.8
     },
     post_call_actions={
         "email": {
             "enabled": True,
-            "recipients": ["example@example.com"],
-            "include": ["summary", "extracted_variables"]
+            "recipients": ["shopping-assistant@walmart.com"],
+            "include": ["summary", "extracted_variables", "transcript"]
         },
         "extracted_variables": [
-                    {"key": "product_name", "prompt": "Extract or Generate the product name from conversation."},
-                    {"key": "product_quantity", "prompt": "Extract or Generate the product quantity from conversation."},
-                    {"key": "product_type", "prompt": "Extract or Generate the product type or brand if specified in conversation."},
-                    {"key": "action_type", "prompt": "Extract or Confirm the action type: add, update, or remove."}
+            {"key": "product_name", "prompt": "Extract the exact product name mentioned by the user (e.g., 'Diet Coke', 'Great Value Whole Milk')"},
+            {"key": "product_quantity", "prompt": "Extract the quantity as a number (e.g., 1, 2, 3). Default to 1 if not specified."},
+            {"key": "product_brand", "prompt": "Extract the brand name if specified (e.g., 'Coca-Cola', 'Great Value', 'Organic Valley')"},
+            {"key": "product_type", "prompt": "Extract the product category or type (e.g., 'beverage', 'dairy', 'bread', 'eggs')"},
+            {"key": "action_type", "prompt": "Extract the action: 'add', 'remove', 'update', 'check', or 'search'"},
+            {"key": "cart_total", "prompt": "Calculate the total cost of items added in this session"},
+            {"key": "session_id", "prompt": "Generate a unique session identifier for this shopping session"}
         ]
     },
 )
@@ -58,5 +61,25 @@ response = client.agent.create(
 print(f"Status: {response['status']}")
 print(f"Created Agent: {response['json']}")
 
-# Store the agent ID for later examples
+# Store the agent ID for later use
 agent_id = response['json'].get('id')
+
+# Save agent configuration
+config = {
+    "agent_id": agent_id,
+    "created_at": datetime.now().isoformat(),
+    "name": "WalmartVoiceShopper",
+    "capabilities": [
+        "Voice-activated shopping",
+        "Product recognition and matching",
+        "Cart management",
+        "Price checking",
+        "Multi-item processing"
+    ]
+}
+
+with open("agent_config.json", "w") as f:
+    json.dump(config, f, indent=2)
+
+print(f"Agent configuration saved to agent_config.json")
+print(f"Agent ID: {agent_id}")
