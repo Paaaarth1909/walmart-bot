@@ -1,171 +1,194 @@
-# Walmart Voice Shopping Application
+# Walmart Voice Shopping Bot
 
-A React-based voice shopping application built with Vite that simulates Walmart's voice shopping experience. Users can add items to their cart using voice commands or text input.
+A modern voice-enabled shopping application that integrates a Python backend with a React frontend for seamless voice shopping experiences.
 
-## Features
+## 🚀 Features
 
-- **Voice Recognition**: Uses Web Speech API for voice commands
-- **Voice Shopping**: Say "Hey Walmart" followed by product requests
-- **Product Database**: Includes common grocery items with prices
-- **Cart Management**: Add, remove, and update quantities
+- **Voice Shopping**: Use natural language to add items to your cart
+- **Smart Product Recognition**: Recognizes common grocery items and quantities
+- **Real-time Cart Management**: Add, remove, and update items via voice commands
+- **Modern UI**: Beautiful dark theme with smooth animations
 - **Responsive Design**: Works on desktop and mobile devices
-- **Modern UI**: Walmart-style design with smooth animations
-- **Fast Development**: Built with Vite for lightning-fast development
+- **Python Backend**: Powered by Flask and OmniDimension for advanced voice processing
 
-## Voice Commands
+## 🛠️ Tech Stack
 
-The application recognizes voice commands in the format:
-- "Hey Walmart, add a can of diet coke to my cart"
-- "Hey Walmart, add 2 gallons of milk to my cart"
-- "Hey Walmart, add bread, eggs, and butter"
+### Frontend
+- **React 18** with Vite
+- **CSS3** with modern animations and gradients
+- **FontAwesome** icons
+- **Web Speech API** for voice recognition
 
-## Supported Products
+### Backend
+- **Python Flask** server
+- **OmniDimension** for advanced voice processing
+- **CORS** enabled for frontend communication
+- **Product database** with real Walmart pricing
 
-- Diet Coke ($1.48)
-- Milk ($3.48)
-- Bread ($1.48)
-- Eggs ($2.98)
-- Butter ($2.48)
-- Cheese ($2.18)
-- Bananas ($0.58)
-- Apples ($3.98)
-- Chicken ($4.98)
+## 📦 Installation
 
-## Installation
+### Prerequisites
+- Node.js (v16 or higher)
+- Python 3.8 or higher
+- pip (Python package manager)
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd walmart-voice-shopping
-```
+### Backend Setup
 
-2. Install dependencies:
-```bash
-npm install
-```
+1. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. Start the development server:
-```bash
-npm run dev
-```
+2. **Start the Python backend:**
+   ```bash
+   python start.py
+   ```
+   Or directly:
+   ```bash
+   python app.py
+   ```
 
-4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+   The backend will run on `http://localhost:5000`
 
-## Usage
+### Frontend Setup
 
-1. **Voice Shopping**: Click the "Voice Shop" button in the bottom right corner
-2. **Activate**: Say "Hey Walmart" to activate the voice assistant
-3. **Add Items**: Speak your product request (e.g., "add a can of diet coke to my cart")
-4. **Text Input**: Alternatively, type your request in the text input field
-5. **Manage Cart**: View and modify items in your cart
+1. **Install Node.js dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Browser Compatibility
+2. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
 
-The voice recognition feature requires a modern browser that supports the Web Speech API:
-- Chrome (recommended)
-- Edge
-- Safari (limited support)
+   The frontend will run on `http://localhost:5173`
 
-## Project Structure
+## 🎯 Usage
 
-```
-src/
-├── components/
-│   ├── Header.jsx          # Navigation and search
-│   ├── Hero.jsx           # Main landing section
-│   ├── Categories.jsx     # Product categories
-│   ├── VoiceDemo.jsx      # Voice shopping examples
-│   ├── CartPreview.jsx    # Shopping cart display
-│   ├── VoiceBot.jsx       # Voice assistant interface
-│   ├── Footer.jsx         # Footer links
-│   └── *.css             # Component styles
-├── App.jsx                # Main application component
-├── main.jsx               # React entry point
-└── index.css              # Global styles
-```
+### Voice Commands
 
-## Technologies Used
+The voice bot understands natural language commands:
 
-- **React 18**: Modern React with hooks
-- **Vite**: Fast build tool and development server
-- **FontAwesome**: Icons
-- **Web Speech API**: Voice recognition
-- **CSS3**: Styling and animations
-- **Responsive Design**: Mobile-first approach
+- **Add items**: "Add milk to my cart", "Add 2 cans of diet coke"
+- **Remove items**: "Remove bread from my cart", "Take out the eggs"
+- **Check cart**: "Show my cart", "What's in my cart"
+- **Get help**: "What can you do?", "Help"
 
-## Voice Recognition Implementation
+### Supported Products
 
-The application uses the Web Speech API's `webkitSpeechRecognition` for voice input:
+The bot recognizes common grocery items:
+- **Dairy**: Milk, Cheese, Butter, Eggs
+- **Beverages**: Coke, Diet Coke, Pepsi
+- **Produce**: Bananas, Apples
+- **Meat**: Chicken Breast
+- **Pantry**: Bread, Rice
 
-```javascript
-const recognition = new window.webkitSpeechRecognition();
-recognition.continuous = false;
-recognition.interimResults = false;
-recognition.lang = 'en-US';
-```
+### Voice Shopping Flow
 
-## Cart State Management
+1. Click the "Voice Shop" button in the header
+2. Click "Start Voice Shopping" in the modal
+3. Say "Hey Walmart" followed by your request
+4. The bot will process your command and add items to your cart
+5. View your cart in real-time or navigate to the cart page
 
-Cart state is managed using React hooks in the main App component:
-
-```javascript
-const [cartItems, setCartItems] = useState([]);
-const addToCart = (item) => {
-  // Add or update cart items
-};
-```
-
-## Customization
-
-### Adding New Products
-
-To add new products, modify the `products` object in `VoiceBot.jsx`:
-
-```javascript
-const products = {
-  'new-product': { 
-    id: 'new-product-1', 
-    name: 'Product Name', 
-    price: 1.99, 
-    quantity: 1 
-  }
-};
-```
-
-### Styling
-
-The application uses CSS modules and follows Walmart's brand colors:
-- Primary Blue: `#0071ce`
-- Red: `#ff4444`
-- Gray: `#f8f9fa`
-
-## Development
-
-### Available Scripts
-
-- `npm run dev`: Runs the app in development mode
-- `npm run build`: Builds the app for production
-- `npm run preview`: Preview the production build
-- `npm run lint`: Run ESLint
-
-### Environment Variables
-
-Create a `.env` file in the root directory for environment variables:
+## 🏗️ Project Structure
 
 ```
-VITE_API_URL=your_api_url_here
+walmart-bot/
+├── app.py                 # Flask backend server
+├── bot.py                 # Original OmniDimension bot setup
+├── start.py              # Backend startup script
+├── requirements.txt       # Python dependencies
+├── package.json          # Node.js dependencies
+├── vite.config.js        # Vite configuration
+├── index.html            # Main HTML file
+├── src/
+│   ├── main.jsx         # React entry point
+│   ├── App.jsx          # Main React component
+│   ├── App.css          # App styles
+│   ├── index.css        # Global styles
+│   └── components/      # React components
+│       ├── Header.jsx   # Navigation header
+│       ├── Hero.jsx     # Hero section
+│       ├── Categories.jsx # Product categories
+│       ├── VoiceDemo.jsx # Voice demo section
+│       ├── CartPreview.jsx # Cart preview
+│       ├── VoiceBot.jsx # Voice bot interface
+│       ├── CartPage.jsx # Full cart page
+│       ├── Footer.jsx   # Footer component
+│       └── *.css        # Component styles
+└── README.md            # This file
 ```
 
-## Deployment
+## 🔧 API Endpoints
 
-1. Build the production version:
+### Backend API (Flask)
+
+- `GET /api/health` - Health check
+- `GET /api/cart` - Get cart contents
+- `POST /api/cart/add` - Add item to cart
+- `POST /api/cart/remove` - Remove item from cart
+- `POST /api/cart/update` - Update item quantity
+- `POST /api/voice/start` - Start voice session
+- `POST /api/voice/process` - Process voice command
+
+## 🎨 UI Features
+
+- **Dark Theme**: Modern dark interface with blue accents
+- **Smooth Animations**: CSS transitions and keyframe animations
+- **Gradient Backgrounds**: Beautiful gradient effects
+- **Responsive Design**: Works on all screen sizes
+- **Voice Interface**: Modal-based voice shopping interface
+- **Cart Management**: Full cart page with quantity controls
+
+## 🚀 Development
+
+### Running in Development Mode
+
+1. **Terminal 1 - Backend:**
+   ```bash
+   python start.py
+   ```
+
+2. **Terminal 2 - Frontend:**
+   ```bash
+   npm run dev
+   ```
+
+3. **Access the application:**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
+
+### Building for Production
+
 ```bash
 npm run build
 ```
 
-2. Deploy the `dist` folder to your hosting service.
+## 🔍 Troubleshooting
 
-## Contributing
+### Common Issues
+
+1. **Backend won't start:**
+   - Check if Python dependencies are installed: `pip install -r requirements.txt`
+   - Ensure port 5000 is available
+
+2. **Frontend can't connect to backend:**
+   - Verify backend is running on http://localhost:5000
+   - Check browser console for CORS errors
+
+3. **Voice recognition not working:**
+   - Ensure microphone permissions are granted
+   - Try refreshing the page
+   - Check if Web Speech API is supported in your browser
+
+4. **Products not being added to cart:**
+   - Check browser console for API errors
+   - Verify the voice command format
+   - Try the example commands listed above
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -173,38 +196,17 @@ npm run build
 4. Test thoroughly
 5. Submit a pull request
 
-## License
+## 📄 License
 
-This project is for educational purposes and is not affiliated with Walmart Inc.
+This project is for educational purposes. Walmart branding and trademarks belong to their respective owners.
 
-## Troubleshooting
+## 🙏 Acknowledgments
 
-### Voice Recognition Not Working
+- **OmniDimension** for voice processing capabilities
+- **React** and **Vite** for the frontend framework
+- **Flask** for the backend framework
+- **FontAwesome** for the icons
 
-1. Ensure you're using a supported browser (Chrome recommended)
-2. Check that your microphone permissions are enabled
-3. Try refreshing the page
-4. Use the text input as an alternative
+---
 
-### Build Errors
-
-1. Clear node_modules and reinstall:
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-2. Clear Vite cache:
-```bash
-npm run dev -- --force
-```
-
-## Future Enhancements
-
-- Integration with real Walmart API
-- User authentication
-- Order history
-- Payment processing
-- Advanced voice commands
-- Product recommendations
-- Multi-language support 
+**Note**: This is a demo application. For production use, implement proper security measures, database storage, and error handling. 

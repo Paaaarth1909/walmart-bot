@@ -1,227 +1,264 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMicrophone, faTimes, faRobot } from '@fortawesome/free-solid-svg-icons';
+import { faMicrophone, faMicrophoneSlash, faTimes, faVolumeUp } from '@fortawesome/free-solid-svg-icons';
 import './VoiceBot.css';
 
 const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      type: 'bot',
-      content: "Hello! I'm your Walmart voice shopping assistant. Say 'Hey Walmart' followed by what you'd like to add to your cart."
-    }
-  ]);
   const [isListening, setIsListening] = useState(false);
-  const [textInput, setTextInput] = useState('');
-  const [listeningTime, setListeningTime] = useState(0);
-  const messagesEndRef = useRef(null);
+  const [transcript, setTranscript] = useState('');
+  const [botResponse, setBotResponse] = useState('');
+  const [sessionId, setSessionId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [conversationHistory, setConversationHistory] = useState([]);
+  
   const recognitionRef = useRef(null);
   const timeoutRef = useRef(null);
+  const countdownRef = useRef(null);
 
-  // Product database
-  const products = {
-    'diet coke': { id: 'diet-coke-1', name: 'Coca-Cola Diet Coke 12 oz Can', price: 1.48, quantity: 1 },
-    'coke': { id: 'coke-1', name: 'Coca-Cola Classic 12 oz Can', price: 1.48, quantity: 1 },
-    'milk': { id: 'milk-1', name: 'Great Value Whole Milk 1 Gallon', price: 3.48, quantity: 1 },
-    'bread': { id: 'bread-1', name: 'Great Value White Bread 20 oz', price: 1.48, quantity: 1 },
-    'eggs': { id: 'eggs-1', name: 'Great Value Large Eggs 12 Count', price: 2.98, quantity: 1 },
-    'butter': { id: 'butter-1', name: 'Great Value Salted Butter 16 oz', price: 2.48, quantity: 1 },
-    'cheese': { id: 'cheese-1', name: 'Great Value Cheddar Cheese 8 oz', price: 2.18, quantity: 1 },
-    'bananas': { id: 'bananas-1', name: 'Great Value Bananas 1 lb', price: 0.58, quantity: 1 },
-    'apples': { id: 'apples-1', name: 'Great Value Gala Apples 3 lb', price: 3.98, quantity: 1 },
-    'chicken': { id: 'chicken-1', name: 'Great Value Chicken Breast 1 lb', price: 4.98, quantity: 1 }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Initialize speech recognition
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
-      recognitionRef.current = new window.webkitSpeechRecognition();
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
-
+      
       recognitionRef.current.onstart = () => {
         setIsListening(true);
-        setListeningTime(0);
-        addMessage('bot', 'Listening... Say "Hey Walmart" followed by your request.');
-        
-        // Start timer
-        const startTime = Date.now();
-        timeoutRef.current = setInterval(() => {
-          const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          setListeningTime(elapsed);
-          
-          if (elapsed >= 30) {
-            recognitionRef.current.stop();
-            addMessage('bot', 'Listening session ended. Click the microphone to start again.');
-          }
-        }, 1000);
+        setBotResponse('Listening... Say "Hey Walmart" to start shopping!');
       };
-
+      
       recognitionRef.current.onresult = (event) => {
-        const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
-        const isFinal = event.results[event.results.length - 1].isFinal;
+        let finalTranscript = '';
+        let interimTranscript = '';
         
-        if (isFinal) {
-          addMessage('user', transcript);
-          processVoiceCommand(transcript);
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        setTranscript(finalTranscript || interimTranscript);
+        
+        if (finalTranscript) {
+          processVoiceCommand(finalTranscript);
         }
       };
-
+      
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
-        addMessage('bot', 'Sorry, I had trouble understanding. Please try again.');
+        setBotResponse('Sorry, I had trouble hearing you. Please try again.');
       };
-
+      
       recognitionRef.current.onend = () => {
         setIsListening(false);
-        setListeningTime(0);
-        if (timeoutRef.current) {
-          clearInterval(timeoutRef.current);
-          timeoutRef.current = null;
-        }
       };
     }
   }, []);
 
-  const addMessage = (type, content) => {
-    const newMessage = {
-      id: Date.now(),
-      type,
-      content
+  // Countdown timer
+  useEffect(() => {
+    if (isListening && timeLeft > 0) {
+      countdownRef.current = setTimeout(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      stopListening();
+    }
+    
+    return () => {
+      if (countdownRef.current) {
+        clearTimeout(countdownRef.current);
+      }
     };
-    setMessages(prev => [...prev, newMessage]);
-  };
+  }, [isListening, timeLeft]);
 
-  const processVoiceCommand = (transcript) => {
-    // Check for wake phrase
-    if (!transcript.includes('hey walmart') && !transcript.includes('hello walmart')) {
-      addMessage('bot', 'Please say "Hey Walmart" to activate voice shopping.');
-      return;
-    }
-
-    // Extract product and quantity
-    const words = transcript.split(' ');
-    let quantity = 1;
-    let productName = '';
-
-    // Look for quantity indicators
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      if (word === 'a' || word === 'an' || word === 'one' || word === '1') {
-        quantity = 1;
-      } else if (word === 'two' || word === '2') {
-        quantity = 2;
-      } else if (word === 'three' || word === '3') {
-        quantity = 3;
-      } else if (word === 'four' || word === '4') {
-        quantity = 4;
-      } else if (word === 'five' || word === '5') {
-        quantity = 5;
+  const startListening = async () => {
+    try {
+      // Start voice session with backend
+      const response = await fetch('http://localhost:5000/api/voice/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setSessionId(data.session_id);
+        setBotResponse(data.message);
+        setConversationHistory([]);
       }
-    }
-
-    // Extract product name
-    const addIndex = words.indexOf('add');
-    if (addIndex !== -1) {
-      productName = words.slice(addIndex + 1).join(' ').replace(/to my cart/g, '').trim();
-    }
-
-    // Find matching product
-    const matchedProduct = Object.keys(products).find(key => 
-      productName.includes(key) || key.includes(productName)
-    );
-
-    if (matchedProduct) {
-      const product = { ...products[matchedProduct], quantity };
-      onAddToCart(product);
-      addMessage('bot', `Perfect! I've added ${quantity} ${product.name} to your cart for $${(product.price * quantity).toFixed(2)}.`);
-    } else {
-      addMessage('bot', `I'm sorry, I couldn't find "${productName}" in our inventory. Please try a different product.`);
-    }
-  };
-
-  const startListening = () => {
-    if (recognitionRef.current) {
-      try {
+      
+      if (recognitionRef.current) {
         recognitionRef.current.start();
-        // Set a timeout to stop listening after 30 seconds
-        setTimeout(() => {
-          if (isListening) {
-            recognitionRef.current.stop();
-            addMessage('bot', 'Listening session ended. Click the microphone to start again.');
-          }
-        }, 30000);
-      } catch (error) {
-        addMessage('bot', 'Error starting speech recognition. Please try again.');
+        setTimeLeft(30);
       }
-    } else {
-      addMessage('bot', 'Speech recognition is not supported in this browser. Please use the text input instead.');
+    } catch (error) {
+      console.error('Error starting voice session:', error);
+      setBotResponse('Sorry, I cannot connect to the voice service right now.');
     }
   };
 
-  const handleTextInput = (e) => {
-    if (e.key === 'Enter' && textInput.trim()) {
-      addMessage('user', textInput);
-      processVoiceCommand(textInput.toLowerCase());
-      setTextInput('');
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+    setTimeLeft(30);
+    clearTimeout(timeoutRef.current);
+  };
+
+  const processVoiceCommand = async (command) => {
+    if (!sessionId) return;
+    
+    setIsProcessing(true);
+    setBotResponse('Processing your request...');
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/voice/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          command: command,
+          session_id: sessionId,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setBotResponse(data.message);
+        
+        // Add to conversation history
+        setConversationHistory(prev => [...prev, {
+          user: command,
+          bot: data.message,
+          timestamp: new Date().toLocaleTimeString()
+        }]);
+        
+        // Handle cart actions
+        if (data.action === 'add_to_cart' && data.product) {
+          onAddToCart({
+            id: Date.now(),
+            name: data.product.name,
+            price: data.product.price,
+            quantity: data.product.quantity
+          });
+        }
+      } else {
+        setBotResponse(data.message);
+      }
+    } catch (error) {
+      console.error('Error processing voice command:', error);
+      setBotResponse('Sorry, I had trouble processing your request. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
   };
+
+  const handleToggle = () => {
+    if (isOpen) {
+      stopListening();
+      setTranscript('');
+      setBotResponse('');
+      setSessionId(null);
+      setConversationHistory([]);
+    }
+    onToggle();
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div className="voice-bot">
-      <div className="bot-button" onClick={onToggle}>
-        <FontAwesomeIcon icon={faMicrophone} />
-        <span className="bot-label">Voice Shop</span>
-      </div>
-      {isOpen && (
-        <div className="bot-interface">
-          <div className="bot-header">
-            <h3>Walmart Voice Assistant</h3>
-            <button className="close-btn" onClick={onToggle}>
-              <FontAwesomeIcon icon={faTimes} />
-            </button>
+    <div className="voice-bot-overlay">
+      <div className="voice-bot-modal">
+        <div className="voice-bot-header">
+          <h3>Walmart Voice Assistant</h3>
+          <button className="close-btn" onClick={handleToggle}>
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+        </div>
+        
+        <div className="voice-bot-content">
+          <div className="voice-status">
+            <div className={`mic-button ${isListening ? 'listening' : ''}`}>
+              <FontAwesomeIcon 
+                icon={isListening ? faMicrophone : faMicrophoneSlash} 
+                className="mic-icon"
+              />
+            </div>
+            <div className="status-text">
+              {isListening ? 'Listening...' : 'Voice Assistant Ready'}
+            </div>
+            {isListening && (
+              <div className="countdown">
+                {timeLeft}s remaining
+              </div>
+            )}
           </div>
-          <div className="bot-content">
-            <div className="bot-messages">
-              {messages.map(message => (
-                <div key={message.id} className={`message ${message.type}-message`}>
-                  {message.type === 'bot' && <FontAwesomeIcon icon={faRobot} />}
-                  <div className="message-content">
-                    <p>{message.content}</p>
-                  </div>
+          
+          <div className="transcript-area">
+            <div className="transcript-label">You said:</div>
+            <div className="transcript-text">
+              {transcript || 'Say "Hey Walmart" to start shopping...'}
+            </div>
+          </div>
+          
+          <div className="bot-response">
+            <div className="response-label">
+              <FontAwesomeIcon icon={faVolumeUp} className="volume-icon" />
+              Assistant:
+            </div>
+            <div className="response-text">
+              {isProcessing ? 'Processing...' : botResponse}
+            </div>
+          </div>
+          
+          <div className="conversation-history">
+            <h4>Conversation History</h4>
+            <div className="history-list">
+              {conversationHistory.map((msg, index) => (
+                <div key={index} className="history-item">
+                  <div className="history-time">{msg.timestamp}</div>
+                  <div className="history-user">You: {msg.user}</div>
+                  <div className="history-bot">Assistant: {msg.bot}</div>
                 </div>
               ))}
-              <div ref={messagesEndRef} />
-            </div>
-            <div className="bot-input">
-              <button 
-                className={`voice-btn ${isListening ? 'listening' : ''}`}
-                onClick={startListening}
-                disabled={isListening}
-              >
-                <FontAwesomeIcon icon={faMicrophone} />
-                {isListening && <span className="listening-time">{30 - listeningTime}s</span>}
-              </button>
-              <input
-                type="text"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                onKeyPress={handleTextInput}
-                placeholder="Or type your request here..."
-              />
             </div>
           </div>
         </div>
-      )}
+        
+        <div className="voice-bot-footer">
+          <button 
+            className={`voice-btn ${isListening ? 'stop' : 'start'}`}
+            onClick={isListening ? stopListening : startListening}
+            disabled={isProcessing}
+          >
+            {isListening ? 'Stop Listening' : 'Start Voice Shopping'}
+          </button>
+          
+          <div className="voice-tips">
+            <p>Try saying:</p>
+            <ul>
+              <li>"Add milk to my cart"</li>
+              <li>"Add 2 cans of diet coke"</li>
+              <li>"Remove bread from my cart"</li>
+              <li>"Show my cart"</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
