@@ -1,6 +1,6 @@
 # Walmart Voice Shopping Application
 
-A React-based voice shopping application that simulates Walmart's voice shopping experience. Users can add items to their cart using voice commands or text input.
+A React-based voice shopping application built with Vite that simulates Walmart's voice shopping experience. Users can add items to their cart using voice commands or text input.
 
 ## Features
 
@@ -10,6 +10,7 @@ A React-based voice shopping application that simulates Walmart's voice shopping
 - **Cart Management**: Add, remove, and update quantities
 - **Responsive Design**: Works on desktop and mobile devices
 - **Modern UI**: Walmart-style design with smooth animations
+- **Fast Development**: Built with Vite for lightning-fast development
 
 ## Voice Commands
 
@@ -45,7 +46,7 @@ npm install
 
 3. Start the development server:
 ```bash
-npm start
+npm run dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -70,22 +71,23 @@ The voice recognition feature requires a modern browser that supports the Web Sp
 ```
 src/
 ├── components/
-│   ├── Header.js          # Navigation and search
-│   ├── Hero.js           # Main landing section
-│   ├── Categories.js     # Product categories
-│   ├── VoiceDemo.js      # Voice shopping examples
-│   ├── CartPreview.js    # Shopping cart display
-│   ├── VoiceBot.js       # Voice assistant interface
-│   ├── Footer.js         # Footer links
+│   ├── Header.jsx          # Navigation and search
+│   ├── Hero.jsx           # Main landing section
+│   ├── Categories.jsx     # Product categories
+│   ├── VoiceDemo.jsx      # Voice shopping examples
+│   ├── CartPreview.jsx    # Shopping cart display
+│   ├── VoiceBot.jsx       # Voice assistant interface
+│   ├── Footer.jsx         # Footer links
 │   └── *.css             # Component styles
-├── App.js                # Main application component
-├── index.js              # React entry point
-└── index.css             # Global styles
+├── App.jsx                # Main application component
+├── main.jsx               # React entry point
+└── index.css              # Global styles
 ```
 
 ## Technologies Used
 
 - **React 18**: Modern React with hooks
+- **Vite**: Fast build tool and development server
 - **FontAwesome**: Icons
 - **Web Speech API**: Voice recognition
 - **CSS3**: Styling and animations
@@ -117,7 +119,7 @@ const addToCart = (item) => {
 
 ### Adding New Products
 
-To add new products, modify the `products` object in `VoiceBot.js`:
+To add new products, modify the `products` object in `VoiceBot.jsx`:
 
 ```javascript
 const products = {
@@ -141,17 +143,17 @@ The application uses CSS modules and follows Walmart's brand colors:
 
 ### Available Scripts
 
-- `npm start`: Runs the app in development mode
-- `npm test`: Launches the test runner
+- `npm run dev`: Runs the app in development mode
 - `npm run build`: Builds the app for production
-- `npm run eject`: Ejects from Create React App
+- `npm run preview`: Preview the production build
+- `npm run lint`: Run ESLint
 
 ### Environment Variables
 
 Create a `.env` file in the root directory for environment variables:
 
 ```
-REACT_APP_API_URL=your_api_url_here
+VITE_API_URL=your_api_url_here
 ```
 
 ## Deployment
@@ -161,7 +163,7 @@ REACT_APP_API_URL=your_api_url_here
 npm run build
 ```
 
-2. Deploy the `build` folder to your hosting service.
+2. Deploy the `dist` folder to your hosting service.
 
 ## Contributing
 
@@ -192,9 +194,9 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
-2. Clear React cache:
+2. Clear Vite cache:
 ```bash
-npm start -- --reset-cache
+npm run dev -- --force
 ```
 
 ## Future Enhancements

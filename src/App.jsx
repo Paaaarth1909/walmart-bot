@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import Categories from './components/Categories';
-import VoiceDemo from './components/VoiceDemo';
-import CartPreview from './components/CartPreview';
-import VoiceBot from './components/VoiceBot';
-import Footer from './components/Footer';
+import Header from './components/Header.jsx';
+import Hero from './components/Hero.jsx';
+import Categories from './components/Categories.jsx';
+import VoiceDemo from './components/VoiceDemo.jsx';
+import CartPreview from './components/CartPreview.jsx';
+import VoiceBot from './components/VoiceBot.jsx';
+import Footer from './components/Footer.jsx';
 import './App.css';
 
 function App() {
