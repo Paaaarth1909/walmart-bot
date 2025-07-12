@@ -13,8 +13,10 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
   ]);
   const [isListening, setIsListening] = useState(false);
   const [textInput, setTextInput] = useState('');
+  const [listeningTime, setListeningTime] = useState(0);
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   // Product database
   const products = {
@@ -41,19 +43,36 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
       recognitionRef.current = new window.webkitSpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
       recognitionRef.current.onstart = () => {
         setIsListening(true);
-        addMessage('bot', 'Listening...');
+        setListeningTime(0);
+        addMessage('bot', 'Listening... Say "Hey Walmart" followed by your request.');
+        
+        // Start timer
+        const startTime = Date.now();
+        timeoutRef.current = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          setListeningTime(elapsed);
+          
+          if (elapsed >= 30) {
+            recognitionRef.current.stop();
+            addMessage('bot', 'Listening session ended. Click the microphone to start again.');
+          }
+        }, 1000);
       };
 
       recognitionRef.current.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.toLowerCase();
-        addMessage('user', transcript);
-        processVoiceCommand(transcript);
+        const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase();
+        const isFinal = event.results[event.results.length - 1].isFinal;
+        
+        if (isFinal) {
+          addMessage('user', transcript);
+          processVoiceCommand(transcript);
+        }
       };
 
       recognitionRef.current.onerror = (event) => {
@@ -64,6 +83,11 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
 
       recognitionRef.current.onend = () => {
         setIsListening(false);
+        setListeningTime(0);
+        if (timeoutRef.current) {
+          clearInterval(timeoutRef.current);
+          timeoutRef.current = null;
+        }
       };
     }
   }, []);
@@ -127,7 +151,18 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
 
   const startListening = () => {
     if (recognitionRef.current) {
-      recognitionRef.current.start();
+      try {
+        recognitionRef.current.start();
+        // Set a timeout to stop listening after 30 seconds
+        setTimeout(() => {
+          if (isListening) {
+            recognitionRef.current.stop();
+            addMessage('bot', 'Listening session ended. Click the microphone to start again.');
+          }
+        }, 30000);
+      } catch (error) {
+        addMessage('bot', 'Error starting speech recognition. Please try again.');
+      }
     } else {
       addMessage('bot', 'Speech recognition is not supported in this browser. Please use the text input instead.');
     }
@@ -174,6 +209,7 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
                 disabled={isListening}
               >
                 <FontAwesomeIcon icon={faMicrophone} />
+                {isListening && <span className="listening-time">{30 - listeningTime}s</span>}
               </button>
               <input
                 type="text"

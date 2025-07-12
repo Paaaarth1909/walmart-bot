@@ -1,55 +1,150 @@
 .voice-demo {
-  padding: 80px 0;
-  background: #f8f9fa;
+  padding: var(--space-xl) 0;
+  background: var(--bg-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.voice-demo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .voice-demo h2 {
   text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 50px;
-  color: #333;
+  font-size: clamp(2rem, 4vw, 3rem);
+  margin-bottom: var(--space-xl);
+  color: var(--text-primary);
+  font-weight: 700;
+  animation: fadeInUp var(--transition-normal);
+  position: relative;
+  z-index: 1;
 }
 
 .demo-examples {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-lg);
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp var(--transition-slow);
 }
 
 .example-card {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  background: var(--bg-card);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   text-align: center;
-  transition: transform 0.3s ease;
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.example-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-red));
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  z-index: 1;
 }
 
 .example-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--accent-blue);
+}
+
+.example-card:hover::before {
+  opacity: 0.1;
 }
 
 .example-icon {
-  width: 60px;
-  height: 60px;
-  background: #0071ce;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
-  color: white;
-  font-size: 24px;
+  margin: 0 auto var(--space-lg);
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  transition: all var(--transition-normal);
+  position: relative;
+  z-index: 2;
+  box-shadow: var(--shadow-md);
+}
+
+.example-card:hover .example-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: var(--shadow-lg);
 }
 
 .example-card h3 {
-  font-size: 1.1rem;
-  margin-bottom: 15px;
-  color: #333;
+  font-size: 1.125rem;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
   font-weight: 600;
+  line-height: 1.4;
+  position: relative;
+  z-index: 2;
 }
 
 .example-card p {
-  color: #666;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  position: relative;
+  z-index: 2;
+}
+
+/* Staggered animation for example cards */
+.example-card:nth-child(1) { 
+  animation: fadeInUp var(--transition-normal) 0.1s both; 
+}
+
+.example-card:nth-child(2) { 
+  animation: fadeInUp var(--transition-normal) 0.2s both; 
+}
+
+.example-card:nth-child(3) { 
+  animation: fadeInUp var(--transition-normal) 0.3s both; 
+}
+
+/* Hover effects */
+.example-card:hover h3 {
+  color: var(--accent-blue);
+}
+
+.example-card:hover p {
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .demo-examples {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+  
+  .voice-demo h2 {
+    font-size: 2rem;
+  }
+  
+  .example-card {
+    padding: var(--space-lg);
+  }
 } 

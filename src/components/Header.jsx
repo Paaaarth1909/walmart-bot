@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faSearch, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import './Header.css';
 
-const Header = ({ cartCount }) => {
+const Header = ({ cartCount, onCartClick }) => {
   return (
     <header className="header">
       <div className="header-top">
@@ -40,10 +40,10 @@ const Header = ({ cartCount }) => {
               </button>
             </div>
             <div className="header-actions">
-              <a href="#" className="cart-icon">
+              <button className="cart-icon" onClick={onCartClick}>
                 <FontAwesomeIcon icon={faShoppingCart} />
                 <span className="cart-count">{cartCount}</span>
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@ const Header = ({ cartCount }) => {
             <li><a href="#">Departments</a></li>
             <li><a href="#">Services</a></li>
             <li><a href="#">Account</a></li>
-            <li><a href="#">Cart</a></li>
+            <li><button onClick={onCartClick}>Cart</button></li>
             <li><a href="#">Help</a></li>
           </ul>
         </div>
