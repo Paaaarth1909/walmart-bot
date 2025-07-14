@@ -2,6 +2,7 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faSearch, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import './Header.css';
+import walmartLogo from '../assets/walmart-logo.png';
 
 const Header = ({ cartCount, onCartClick }) => {
   return (
@@ -30,9 +31,6 @@ const Header = ({ cartCount, onCartClick }) => {
       <div className="header-main">
         <div className="container">
           <div className="header-main-content">
-            <div className="logo">
-              <img src="https://i5.walmartimages.com/dfw/63fd9f59-c3e1/7a569e53-f5a4-4b9d-8d4e-20fda7230e30/v1/walmart-logo.svg" alt="Walmart" />
-            </div>
             <div className="search-bar">
               <input type="text" placeholder="Search everything at Walmart online and in store" />
               <button className="search-btn">
