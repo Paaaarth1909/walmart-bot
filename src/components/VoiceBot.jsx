@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone, faTimes, faRobot } from '@fortawesome/free-solid-svg-icons';
 import './VoiceBot.css';
 
-const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
+const VoiceBot = ({ isOpen, onToggle, onAddToCart, onProceedToCheckout }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -105,6 +105,13 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
     // Check for wake phrase
     if (!transcript.includes('hey walmart') && !transcript.includes('hello walmart')) {
       addMessage('bot', 'Please say "Hey Walmart" to activate voice shopping.');
+      return;
+    }
+
+    // Check for checkout command
+    if (transcript.includes('proceed to checkout') || transcript.includes('checkout')) {
+      addMessage('bot', 'Proceeding to checkout...');
+      if (onProceedToCheckout) onProceedToCheckout();
       return;
     }
 
