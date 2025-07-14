@@ -13,6 +13,7 @@ function App() {
   const [cartItems, setCartItems] = useState([]);
   const [isBotOpen, setIsBotOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState('home');
+  const [orderDetails, setOrderDetails] = useState(null);
 
   const addToCart = (item) => {
     setCartItems(prevItems => {
@@ -49,7 +50,15 @@ function App() {
   const cartCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
   const handleCheckout = () => {
-    alert('Checkout functionality would be implemented here!');
+    const order = {
+      items: cartItems,
+      total: cartTotal,
+      date: new Date().toLocaleString(),
+      orderId: Math.floor(Math.random() * 1000000)
+    };
+    setOrderDetails(order);
+    setCartItems([]);
+    setCurrentPage('thankyou');
   };
 
   const renderPage = () => {
@@ -64,6 +73,29 @@ function App() {
             onBackToHome={() => setCurrentPage('home')}
             onCheckout={handleCheckout}
           />
+        );
+      case 'thankyou':
+        return (
+          <main className="main-content">
+            <div style={{ textAlign: 'center', marginTop: '60px' }}>
+              <h1>Thank you for shopping from Walmart!</h1>
+              <h2>Your order is confirmed.</h2>
+              {orderDetails && (
+                <div style={{ margin: '32px auto', maxWidth: '400px', background: '#1e1e1e', padding: '24px', borderRadius: '16px' }}>
+                  <p><strong>Order ID:</strong> {orderDetails.orderId}</p>
+                  <p><strong>Date:</strong> {orderDetails.date}</p>
+                  <h3>Order Details:</h3>
+                  <ul style={{ textAlign: 'left' }}>
+                    {orderDetails.items.map(item => (
+                      <li key={item.id}>{item.quantity} x {item.name} (${item.price.toFixed(2)} each)</li>
+                    ))}
+                  </ul>
+                  <p><strong>Total:</strong> ${orderDetails.total.toFixed(2)}</p>
+                </div>
+              )}
+              <button className="btn btn-primary" onClick={() => setCurrentPage('home')}>Back to Home</button>
+            </div>
+          </main>
         );
       default:
         return (
@@ -95,6 +127,7 @@ function App() {
         isOpen={isBotOpen}
         onToggle={() => setIsBotOpen(!isBotOpen)}
         onAddToCart={addToCart}
+        onProceedToCheckout={handleCheckout}
       />
       <Footer />
     </div>

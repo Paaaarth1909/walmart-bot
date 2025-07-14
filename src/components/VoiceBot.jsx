@@ -3,7 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone, faMicrophoneSlash, faTimes, faVolumeUp } from '@fortawesome/free-solid-svg-icons';
 import './VoiceBot.css';
 
-const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
+const VoiceBot = ({ isOpen, onToggle, onAddToCart, onProceedToCheckout }) => {
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      type: 'bot',
+      content: "Hello! I'm your Walmart voice shopping assistant. Say 'Hey Walmart' followed by what you'd like to add to your cart."
+    }
+  ]);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [botResponse, setBotResponse] = useState('');
@@ -80,49 +87,39 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
     };
   }, [isListening, timeLeft]);
 
-  const startListening = async () => {
-    try {
-      // Start voice session with backend
-      const response = await fetch('http://localhost:5000/api/voice/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        setSessionId(data.session_id);
-        setBotResponse(data.message);
-        setConversationHistory([]);
-      }
-      
-      if (recognitionRef.current) {
-        recognitionRef.current.start();
-        setTimeLeft(30);
-      }
-    } catch (error) {
-      console.error('Error starting voice session:', error);
-      setBotResponse('Sorry, I cannot connect to the voice service right now.');
-    }
+  // Helper to add a message to conversation history
+  const addMessage = (sender, message) => {
+    setConversationHistory(prev => [
+      ...prev,
+      {
+        user: sender === 'user' ? message : '',
+        bot: sender === 'bot' ? message : '',
+        timestamp: new Date().toLocaleTimeString(),
+      },
+    ]);
   };
 
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+  // Unified async processVoiceCommand
+  const processVoiceCommand = async (transcript) => {
+    // Check for wake phrase
+    if (!transcript.toLowerCase().includes('hey walmart') && !transcript.toLowerCase().includes('hello walmart')) {
+      addMessage('bot', 'Please say "Hey Walmart" to activate voice shopping.');
+      setBotResponse('Please say "Hey Walmart" to activate voice shopping.');
+      return;
     }
-    setIsListening(false);
-    setTimeLeft(30);
-    clearTimeout(timeoutRef.current);
-  };
 
-  const processVoiceCommand = async (command) => {
+    // Check for checkout command
+    if (transcript.toLowerCase().includes('proceed to checkout') || transcript.toLowerCase().includes('checkout')) {
+      addMessage('bot', 'Proceeding to checkout...');
+      setBotResponse('Proceeding to checkout...');
+      if (onProceedToCheckout) onProceedToCheckout();
+      return;
+    }
+
+    // Otherwise, send to backend for processing
     if (!sessionId) return;
-    
     setIsProcessing(true);
     setBotResponse('Processing your request...');
-    
     try {
       const response = await fetch('http://localhost:5000/api/voice/process', {
         method: 'POST',
@@ -130,30 +127,28 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          command: command,
+          command: transcript,
           session_id: sessionId,
         }),
       });
-      
       const data = await response.json();
-      
       if (data.success) {
         setBotResponse(data.message);
-        
-        // Add to conversation history
-        setConversationHistory(prev => [...prev, {
-          user: command,
-          bot: data.message,
-          timestamp: new Date().toLocaleTimeString()
-        }]);
-        
+        setConversationHistory(prev => [
+          ...prev,
+          {
+            user: transcript,
+            bot: data.message,
+            timestamp: new Date().toLocaleTimeString(),
+          },
+        ]);
         // Handle cart actions
         if (data.action === 'add_to_cart' && data.product) {
           onAddToCart({
             id: Date.now(),
             name: data.product.name,
             price: data.product.price,
-            quantity: data.product.quantity
+            quantity: data.product.quantity,
           });
         }
       } else {
@@ -165,6 +160,15 @@ const VoiceBot = ({ isOpen, onToggle, onAddToCart }) => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+    setTimeLeft(30);
+    clearTimeout(timeoutRef.current);
   };
 
   const handleToggle = () => {
